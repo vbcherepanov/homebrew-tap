@@ -29,7 +29,16 @@ class TotalMemory < Formula
   depends_on "python@3.12"
 
   def install
-    virtualenv_install_with_resources
+    # NOTE: cannot use `virtualenv_install_with_resources` here because the
+    # 130+ ML deps (chromadb, transformers, FlagEmbedding, peft, …) are not
+    # declared as Homebrew `resource` blocks and writing them out by hand is
+    # impractical. We let `pip` resolve them from PyPI directly inside the
+    # virtualenv — non-idiomatic for Homebrew core but standard practice for
+    # large Python apps shipped via taps.
+    venv = virtualenv_create(libexec, "python3.12")
+    system venv.root/"bin/pip", "install", "--upgrade", "pip"
+    system venv.root/"bin/pip", "install", "claude-total-memory==#{version}"
+
     bin.install_symlink libexec/"bin/claude-total-memory"
     bin.install_symlink libexec/"bin/lookup-memory"
     bin.install_symlink libexec/"bin/ctm-lookup"
