@@ -45,6 +45,19 @@ class TotalMemory < Formula
     bin.install_symlink libexec/"bin/claude-total-memory" => "tam"
   end
 
+  def post_install
+    # Rebuild orjson from source so that its Mach-O header has enough
+    # space for install_name_tool to rewrite `@rpath/orjson.so` into
+    # `/opt/homebrew/opt/total-memory/...` (Rust wheels ship with a
+    # tightly-packed __LINKEDIT that doesn't fit Homebrew's absolute path).
+    # Without this, `brew install` prints "Failed changing dylib ID" — the
+    # formula still runs, but the warning looks scary.
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version.to_s
+    ENV.append "LDFLAGS", "-headerpad_max_install_names"
+    system libexec/"bin/pip", "install", "--quiet", "--no-binary", "orjson",
+           "--force-reinstall", "--no-deps", "orjson"
+  end
+
   service do
     run [opt_bin/"claude-total-memory"]
     environment_variables MEMORY_MODE: "fast"
