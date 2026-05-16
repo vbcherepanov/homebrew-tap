@@ -30,8 +30,8 @@ brew audit --strict --new vbcherepanov/tap/total-memory
 
 ## After PyPI publish
 
-1. `twine upload dist/claude_total_memory-X.Y.Z.tar.gz`
-2. `curl -L https://files.pythonhosted.org/packages/source/c/claude-total-memory/claude_total_memory-X.Y.Z.tar.gz | shasum -a 256`
+1. `twine upload dist/total_agent_memory-X.Y.Z.tar.gz`
+2. `curl -L https://files.pythonhosted.org/packages/source/t/total-agent-memory/total_agent_memory-X.Y.Z.tar.gz | shasum -a 256`
 3. Update `url`, `sha256`, `version` lines in `Formula/total-memory.rb`
 4. Commit + push this repo
 5. `brew tap vbcherepanov/tap` on any Mac/Linux → `brew install total-memory` works

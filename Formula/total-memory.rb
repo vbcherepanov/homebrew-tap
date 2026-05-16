@@ -14,12 +14,13 @@ class TotalMemory < Formula
   desc "Persistent memory MCP server for Claude Code, Codex CLI and any MCP client"
   homepage "https://totalmemory.dev"
   # Fill in after `twine upload`. Tarball URL pattern:
-  #   https://files.pythonhosted.org/packages/source/c/claude-total-memory/
-  #     claude_total_memory-<VERSION>.tar.gz
+  #   https://files.pythonhosted.org/packages/source/t/total-agent-memory/
+  #     total_agent_memory-<VERSION>.tar.gz
   # SHA-256: shasum -a 256 <downloaded tarball>
-  url "https://files.pythonhosted.org/packages/source/c/claude-total-memory/claude_total_memory-11.2.2.tar.gz"
-  version "11.2.2"
-  sha256 "1ffbc95ee553cfe08beffa86a55db19f433b5d09d6f69953ed9bc7a58a25b22d"
+  url "https://files.pythonhosted.org/packages/b8/b5/bf6bb35eebdb35eca634aa45f6be1b5056bf5d5586f1e00521dafe39976f/total_agent_memory-12.0.0.tar.gz"
+  version "12.0.0"
+  # TODO: update after PyPI publish via: curl -L <url> | shasum -a 256
+  sha256 "2bf8b62ffabf1448d0bc12148f853da99c43c9c127d0c44998804281422bb4d1"
   license "MIT"
 
   head "https://github.com/vbcherepanov/total-agent-memory.git", branch: "main"
@@ -35,14 +36,18 @@ class TotalMemory < Formula
     # (chromadb, transformers, FlagEmbedding, peft, …) directly from PyPI
     # — declaring them as `resource` blocks would be impractical.
     python = Formula["python@3.12"].opt_bin/"python3.12"
-    system python, "-m", "venv", libexec    # ← stock venv WITH pip
+    system python, "-m", "venv", libexec # ← stock venv WITH pip
     system libexec/"bin/pip", "install", "--quiet", "--upgrade", "pip"
-    system libexec/"bin/pip", "install", "--quiet", "claude-total-memory==#{version}"
+    system libexec/"bin/pip", "install", "--quiet", "total-agent-memory==#{version}"
 
-    bin.install_symlink libexec/"bin/claude-total-memory"
+    bin.install_symlink libexec/"bin/total-agent-memory"
     bin.install_symlink libexec/"bin/lookup-memory"
     bin.install_symlink libexec/"bin/ctm-lookup"
-    bin.install_symlink libexec/"bin/claude-total-memory" => "tam"
+    bin.install_symlink libexec/"bin/total-agent-memory" => "tam"
+    bin.install_symlink libexec/"bin/lookup-memory" => "tam-lookup"
+    # Backward-compat: legacy entry-point name from v11.x for users with
+    # `claude-total-memory` baked into scripts / PATH expectations.
+    bin.install_symlink libexec/"bin/total-agent-memory" => "claude-total-memory"
   end
 
   def post_install
@@ -59,7 +64,7 @@ class TotalMemory < Formula
   end
 
   service do
-    run [opt_bin/"claude-total-memory"]
+    run [opt_bin/"total-agent-memory"]
     environment_variables MEMORY_MODE: "fast"
     keep_alive true
     log_path var/"log/total-memory.log"
@@ -68,7 +73,9 @@ class TotalMemory < Formula
 
   def caveats
     <<~EOS
-      Memory state lives in ~/.claude-memory/ (override via CLAUDE_MEMORY_DIR).
+      Memory state lives in ~/.tam/ (override via TAM_MEMORY_DIR).
+      Legacy ~/.claude-memory/ from v11.x installs is migrated automatically
+      on first run, with a symlink kept for backward-compat.
 
       Wire your IDE (one command per editor):
         npx -y total-agent-memory connect claude-code
@@ -83,6 +90,7 @@ class TotalMemory < Formula
   end
 
   test do
-    assert_match "claude-total-memory", shell_output("#{bin}/claude-total-memory --help 2>&1", 0..2)
+    assert_match "total-agent-memory", shell_output("#{bin}/total-agent-memory --help 2>&1", 0..2)
+    assert_match "total-agent-memory", shell_output("#{bin}/tam --help 2>&1", 0..2)
   end
 end
