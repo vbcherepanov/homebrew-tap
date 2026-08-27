@@ -13,14 +13,9 @@ class TotalMemory < Formula
 
   desc "Persistent memory MCP server for Claude Code, Codex CLI and any MCP client"
   homepage "https://totalmemory.dev"
-  # Fill in after `twine upload`. Tarball URL pattern:
-  #   https://files.pythonhosted.org/packages/source/t/total-agent-memory/
-  #     total_agent_memory-<VERSION>.tar.gz
-  # SHA-256: shasum -a 256 <downloaded tarball>
-  url "https://files.pythonhosted.org/packages/b8/b5/bf6bb35eebdb35eca634aa45f6be1b5056bf5d5586f1e00521dafe39976f/total_agent_memory-12.0.0.tar.gz"
-  version "12.0.0"
-  # TODO: update after PyPI publish via: curl -L <url> | shasum -a 256
-  sha256 "2bf8b62ffabf1448d0bc12148f853da99c43c9c127d0c44998804281422bb4d1"
+  url "https://files.pythonhosted.org/packages/26/9a/7c92b4f5e79119a2fa7636fd875a4757354d426d4e8702acb7c4a3ece39b/total_agent_memory-13.0.0.tar.gz"
+  version "13.0.0"
+  sha256 "258811717111d0c4cca7baa7e5c313e928c6e79ec8531377553d76c8244e19ba"
   license "MIT"
 
   head "https://github.com/vbcherepanov/total-agent-memory.git", branch: "main"
