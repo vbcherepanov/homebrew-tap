@@ -55,7 +55,9 @@ class TotalMemory < Formula
     # tightly-packed __LINKEDIT that doesn't fit Homebrew's absolute path).
     # Without this, `brew install` prints "Failed changing dylib ID" — the
     # formula still runs, but the warning looks scary.
-    ENV["MACOSX_DEPLOYMENT_TARGET"] = MacOS.version.to_s
+    # maturin rejects a bare major version such as "26" (MacOS.version.to_s
+    # on macOS 11+); it needs MAJOR.MINOR.
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = "#{MacOS.version.major}.0"
     ENV.append "LDFLAGS", "-headerpad_max_install_names"
     system libexec/"bin/pip", "install", "--quiet", "--no-binary", "orjson",
            "--force-reinstall", "--no-deps", "orjson"
