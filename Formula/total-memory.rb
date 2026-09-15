@@ -35,6 +35,18 @@ class TotalMemory < Formula
     system libexec/"bin/pip", "install", "--quiet", "--upgrade", "pip"
     system libexec/"bin/pip", "install", "--quiet", "total-agent-memory==#{version}"
 
+    # Rebuild orjson from source with header padding so Homebrew can rewrite
+    # its `@rpath` dylib ID into the keg path; the prebuilt Rust wheel has no
+    # room and `brew install` fails with "Failed changing dylib ID". This must
+    # run here, not in post_install: Homebrew's cleaner removes the RECORD
+    # files pip needs to replace a package. The flag goes through rustc
+    # (Homebrew's rustc wrapper), because LDFLAGS never reaches the Rust
+    # linker, and maturin rejects a bare major deployment target such as "26".
+    ENV["MACOSX_DEPLOYMENT_TARGET"] = "#{MacOS.version.major}.0"
+    ENV.append_to_rustflags "-C link-arg=-Wl,-headerpad_max_install_names"
+    system libexec/"bin/pip", "install", "--quiet", "--no-cache-dir", "--no-binary", "orjson",
+           "--force-reinstall", "--no-deps", "orjson"
+
     bin.install_symlink libexec/"bin/total-agent-memory"
     bin.install_symlink libexec/"bin/lookup-memory"
     bin.install_symlink libexec/"bin/ctm-lookup"
@@ -46,21 +58,6 @@ class TotalMemory < Formula
     # Backward-compat: legacy entry-point name from v11.x for users with
     # `claude-total-memory` baked into scripts / PATH expectations.
     bin.install_symlink libexec/"bin/total-agent-memory" => "claude-total-memory"
-  end
-
-  def post_install
-    # Rebuild orjson from source so that its Mach-O header has enough
-    # space for install_name_tool to rewrite `@rpath/orjson.so` into
-    # `/opt/homebrew/opt/total-memory/...` (Rust wheels ship with a
-    # tightly-packed __LINKEDIT that doesn't fit Homebrew's absolute path).
-    # Without this, `brew install` prints "Failed changing dylib ID" — the
-    # formula still runs, but the warning looks scary.
-    # maturin rejects a bare major version such as "26" (MacOS.version.to_s
-    # on macOS 11+); it needs MAJOR.MINOR.
-    ENV["MACOSX_DEPLOYMENT_TARGET"] = "#{MacOS.version.major}.0"
-    ENV.append "LDFLAGS", "-headerpad_max_install_names"
-    system libexec/"bin/pip", "install", "--quiet", "--no-binary", "orjson",
-           "--force-reinstall", "--no-deps", "orjson"
   end
 
   service do
