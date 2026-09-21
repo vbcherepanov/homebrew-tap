@@ -13,9 +13,9 @@ class TotalMemory < Formula
 
   desc "Persistent memory MCP server for Claude Code, Codex CLI and any MCP client"
   homepage "https://totalmemory.dev"
-  url "https://files.pythonhosted.org/packages/d0/59/48bf0c1586c85296bae709c7232251e1a720c543350276026c5458c08729/total_agent_memory-14.2.0.tar.gz"
-  version "14.2.0"
-  sha256 "a4f60222306dd34397996c195a1b720533775c22c3c243c45c81e40b0d5051bc"
+  url "https://files.pythonhosted.org/packages/87/49/7ca676978a90f1c221de9ddd70900775cd220eef20d889c63c5a8093927a/total_agent_memory-14.3.0.tar.gz"
+  version "14.3.0"
+  sha256 "6841f8514a59e9ae3e0b5cae287071198f8adbc20c4779551d2eefab427f9db2"
   license "MIT"
 
   head "https://github.com/vbcherepanov/total-agent-memory.git", branch: "main"
