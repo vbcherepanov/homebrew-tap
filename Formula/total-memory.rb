@@ -17,12 +17,20 @@ class TotalMemory < Formula
   version "14.1.0"
   sha256 "d6a7377de3c1af13acae655acc10aefb9b0be271608ef28e128455fe17cd6b02"
   license "MIT"
+  revision 1
 
   head "https://github.com/vbcherepanov/total-agent-memory.git", branch: "main"
 
   depends_on "cmake" => :build      # onnxruntime build on some platforms
   depends_on "rust" => :build       # tokenizers / cryptography wheels on ARM
   depends_on "python@3.12"
+
+  # Prebuilt Rust wheels (orjson, py-rust-stemmers, watchfiles) carry `@rpath`
+  # dylib IDs with no header room to rewrite them into the keg path. Homebrew
+  # aborts relocation on the first such file and leaves the binaries it had
+  # already patched unsigned, so they are killed on load on Apple silicon.
+  # Python loads extension modules by path, so the `@rpath` IDs can stay.
+  preserve_rpath
 
   def install
     # NOTE: we don't use `virtualenv_create` here because the Homebrew
@@ -34,18 +42,6 @@ class TotalMemory < Formula
     system python, "-m", "venv", libexec # ← stock venv WITH pip
     system libexec/"bin/pip", "install", "--quiet", "--upgrade", "pip"
     system libexec/"bin/pip", "install", "--quiet", "total-agent-memory==#{version}"
-
-    # Rebuild orjson from source with header padding so Homebrew can rewrite
-    # its `@rpath` dylib ID into the keg path; the prebuilt Rust wheel has no
-    # room and `brew install` fails with "Failed changing dylib ID". This must
-    # run here, not in post_install: Homebrew's cleaner removes the RECORD
-    # files pip needs to replace a package. The flag goes through rustc
-    # (Homebrew's rustc wrapper), because LDFLAGS never reaches the Rust
-    # linker, and maturin rejects a bare major deployment target such as "26".
-    ENV["MACOSX_DEPLOYMENT_TARGET"] = "#{MacOS.version.major}.0"
-    ENV.append_to_rustflags "-C link-arg=-Wl,-headerpad_max_install_names"
-    system libexec/"bin/pip", "install", "--quiet", "--no-cache-dir", "--no-binary", "orjson",
-           "--force-reinstall", "--no-deps", "orjson"
 
     bin.install_symlink libexec/"bin/total-agent-memory"
     bin.install_symlink libexec/"bin/lookup-memory"
