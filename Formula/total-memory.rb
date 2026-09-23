@@ -82,7 +82,15 @@ class TotalMemory < Formula
   end
 
   test do
-    assert_match "total-agent-memory", shell_output("#{bin}/total-agent-memory --help 2>&1", 0..2)
-    assert_match "total-agent-memory", shell_output("#{bin}/tam --help 2>&1", 0..2)
+    # The entry points speak MCP over stdio; answer an initialize request from a scratch store.
+    ENV["TAM_MEMORY_DIR"] = (testpath/"tam").to_s
+    ENV["MEMORY_MODE"] = "fast"
+    request = '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18",' \
+              '"capabilities":{},"clientInfo":{"name":"brew-test","version":"1"}}}'
+    %w[total-agent-memory tam].each do |cmd|
+      output = pipe_output("#{bin}/#{cmd} 2>/dev/null", "#{request}\n")
+      assert_match '"name":"total-agent-memory"', output
+      assert_match "\"version\":\"#{version}\"", output
+    end
   end
 end
