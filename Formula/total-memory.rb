@@ -13,9 +13,9 @@ class TotalMemory < Formula
 
   desc "Persistent memory MCP server for Claude Code, Codex CLI and any MCP client"
   homepage "https://totalmemory.dev"
-  url "https://files.pythonhosted.org/packages/d9/30/f62998872001b9da6060f41d769690eb4c5358de63c720c5d0887777f672/total_agent_memory-14.6.0.tar.gz"
-  version "14.6.0"
-  sha256 "42d8e03302e7ec66d631a725cefd233b12ff902102c485e75fc66a75beabec93"
+  url "https://files.pythonhosted.org/packages/5e/79/0e4abc3a51976c237b48872912c5bc0c41f72df3090bc7c31287f92502a3/total_agent_memory-14.7.0.tar.gz"
+  version "14.7.0"
+  sha256 "a4a4f322016bedc605bc459d8e019e65c1d916924983935262b234e7452f1598"
   license "MIT"
 
   head "https://github.com/vbcherepanov/total-agent-memory.git", branch: "main"
@@ -37,7 +37,7 @@ class TotalMemory < Formula
     # without a pip binary. We rely on `pip` to resolve all 130+ ML deps
     # (chromadb, transformers, FlagEmbedding, peft, …) directly from PyPI
     # — declaring them as `resource` blocks would be impractical.
-    python = Formula["python@3.12"].opt_bin/"python3.12"
+    python = formula_opt_bin("python@3.12")/"python3.12"
     system python, "-m", "venv", libexec # ← stock venv WITH pip
     system libexec/"bin/pip", "install", "--quiet", "--upgrade", "pip"
     system libexec/"bin/pip", "install", "--quiet", "total-agent-memory==#{version}"
@@ -50,6 +50,8 @@ class TotalMemory < Formula
     # 14.0.0: team server and the remote MCP bridge.
     bin.install_symlink libexec/"bin/tam-team"
     bin.install_symlink libexec/"bin/tam-remote"
+    # 14.6.0: Agent Memory Leaderboard adapter.
+    bin.install_symlink libexec/"bin/tam-aml"
     # Backward-compat: legacy entry-point name from v11.x for users with
     # `claude-total-memory` baked into scripts / PATH expectations.
     bin.install_symlink libexec/"bin/total-agent-memory" => "claude-total-memory"
